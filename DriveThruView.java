@@ -1,7 +1,8 @@
 import java.util.List;
+import java.util.Objects;
 
 /**
- * The DriveThruView class renders the state of both queues and window statuses, and displays 
+ * The DriveThruView class renders the state of both queues, window statuses, the waiting count, and displays 
  * an error message for invalid input or sequence violations and regular messages.
  */
 public class DriveThruView {
@@ -41,11 +42,16 @@ public class DriveThruView {
                 System.out.println("No ticket");
             }
             else {
+                boolean found = false;
                 for (FoodTicket ticket : tickets) {
-                    if (ticket.getTicketId() == window2.getTicketId()) {
+                    if (Objects.equals(ticket.getTicketId(), window2.getTicketId())) {
                         System.out.println("paid: " + ticket.isPaid() + " prepared: " + ticket.isPrepared());
+                        found = true;
                         break;
                     }
+                }
+                if (!found) {
+                    System.out.println("Ticket not found");
                 }
             }
         }
