@@ -79,11 +79,6 @@ public class InputHandlerTest {
         }
 
         @Override
-        public void cancelOrder(String carId) {
-            recordedCalls.add("cancelOrder:" + carId);
-        }
-
-        @Override
         public void showError(String message) {
             errors.add(message);
         }
@@ -101,6 +96,18 @@ public class InputHandlerTest {
     private InputHandler createHandlerWithInput(String input) {
         InputStream in = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
         return new InputHandler(spyController, in);
+    }
+
+    /**
+     * Runs the given input and asserts that nothing reached the controller
+     * and exactly one error was reported.
+     */
+    private void assertSingleError(String input) {
+        createHandlerWithInput(input).readInput();
+        assertTrue(spyController.recordedCalls.isEmpty(),
+            "No controller method should be called for: " + input);
+        assertEquals(1, spyController.errors.size(),
+            "Exactly one error expected for: " + input);
     }
 
     // =========================================================================
@@ -235,23 +242,133 @@ public class InputHandlerTest {
     }
 
     @Test
-    public void testCancelCommandAndAliases() {
+    public void testCommandsAreCaseInsensitiveAndWhitespaceTolerant() {
         String input = String.join("\n",
-            "cancel C101",
-            "cancelorder C102",
-            "removecar C103",
-            "driveoff C104",
+            "   ADD    C101   ",
+            "Pay 5",
             "quit"
         );
 
         createHandlerWithInput(input).readInput();
 
-        assertEquals(List.of(
-            "cancelOrder:C101",
-            "cancelOrder:C102",
-            "cancelOrder:C103",
-            "cancelOrder:C104"
-                ), spyController.recordedCalls);
+        assertEquals(List.of("addCar:C101", "markPaid:5"), spyController.recordedCalls);
         assertTrue(spyController.errors.isEmpty());
+    }
+
+    @Test
+    public void testBlankLinesAreIgnored() {
+        createHandlerWithInput("\n   \nadd C1\n\nquit\n").readInput();
+
+        assertEquals(List.of("addCar:C1"), spyController.recordedCalls);
+        assertTrue(spyController.errors.isEmpty());
+    }
+
+    // =========================================================================
+    // Quit / Exit / End-of-input Tests
+    // =========================================================================
+
+    @Test
+    public void testQuitStopsProcessing() {
+        createHandlerWithInput("add C1\nquit\nadd C2\n").readInput();
+
+        assertEquals(List.of("addCar:C1"), spyController.recordedCalls);
+        assertTrue(spyController.errors.isEmpty());
+    }
+
+    @Test
+    public void testExitStopsProcessing() {
+        createHandlerWithInput("add C1\nEXIT\nadd C2\n").readInput();
+
+        assertEquals(List.of("addCar:C1"), spyController.recordedCalls);
+    }
+
+    @Test
+    public void testEndOfInputWithoutQuitStopsCleanly() {
+        assertDoesNotThrow(() -> createHandlerWithInput("add C1").readInput());
+        assertEquals(List.of("addCar:C1"), spyController.recordedCalls);
+    }
+
+    // =========================================================================
+    // Bad-Input Tests
+    // =========================================================================
+
+    @Test
+    public void testUnknownCommandReportsError() {
+        assertSingleError("foo\nquit");
+    }
+
+    @Test
+    public void testCancelIsNoLongerACommand() {
+        assertSingleError("cancel C101\nquit");
+    }
+
+    @Test
+    public void testAddWithoutCarIdReportsError() {
+        assertSingleError("add\nquit");
+    }
+
+    @Test
+    public void testAddWithExtraArgumentReportsError() {
+        assertSingleError("add C1 C2\nquit");
+    }
+
+    @Test
+    public void testOrderWithoutArgumentsReportsError() {
+        assertSingleError("order\nquit");
+    }
+
+    @Test
+    public void testOrderWithoutItemsReportsError() {
+        assertSingleError("order C1\nquit");
+    }
+
+    @Test
+    public void testPayWithoutIdReportsError() {
+        assertSingleError("pay\nquit");
+    }
+
+    @Test
+    public void testPayWithNonNumericIdReportsError() {
+        assertSingleError("pay abc\nquit");
+    }
+
+    @Test
+    public void testPayWithTooManyArgumentsReportsError() {
+        assertSingleError("pay 1 2\nquit");
+    }
+
+    @Test
+    public void testPayWithOverflowingIdReportsError() {
+        assertSingleError("pay 99999999999\nquit");
+    }
+
+    @Test
+    public void testPrepWithoutIdReportsError() {
+        assertSingleError("prep\nquit");
+    }
+
+    @Test
+    public void testPrepWithNonNumericIdReportsError() {
+        assertSingleError("prep abc\nquit");
+    }
+
+    @Test
+    public void testDeliverWithExtraArgumentReportsError() {
+        assertSingleError("deliver now\nquit");
+    }
+
+    @Test
+    public void testBadInputDoesNotStopTheLoop() {
+        String input = String.join("\n",
+            "foo",
+            "pay abc",
+            "add C1",
+            "quit"
+        );
+
+        createHandlerWithInput(input).readInput();
+
+        assertEquals(2, spyController.errors.size());
+        assertEquals(List.of("addCar:C1"), spyController.recordedCalls);
     }
 }
