@@ -11,6 +11,9 @@ import java.util.Scanner;
  */
 public class InputHandler {
 
+    private static final String VALID_COMMANDS =
+        "Unknown command. \n Valid commands: add, order, pay, prep, deliver.";
+
     private final DriveThruController controller;
     private final Scanner scanner;
 
@@ -47,9 +50,7 @@ public class InputHandler {
      * Malformed commands or non-numeric IDs are caught here and reported via controller.showError.
      */
     public void readInput() {
-        boolean running = true;
-
-        while (running && scanner.hasNextLine()) {
+        while (scanner.hasNextLine()) {
             String line = scanner.nextLine().trim();
 
             if (line.isEmpty()) {
@@ -58,7 +59,6 @@ public class InputHandler {
 
             // Exit condition
             if (line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")) {
-                running = false;
                 break;
             }
 
@@ -79,7 +79,7 @@ public class InputHandler {
                     case "enterorder":
                     case "makeorder":
                     case "neworder":
-                        handleEnterOrder(tokens, line);
+                        handleEnterOrder(tokens);
                         break;
 
                     case "pay":
@@ -100,16 +100,8 @@ public class InputHandler {
                         handleDeliver(tokens);
                         break;
 
-                    case "cancel":
-                    case "cancelorder":
-                    case "removecar":
-                    case "driveoff":
-                        handleCancelOrder(tokens);
-                        break;
-
                     default:
-                        // As specified: Unknown commands caught at the input layer
-                        controller.showError("Unknown command. \n Valid commands: add, order, pay, prep, deliver, cancel.");
+                        controller.showError(VALID_COMMANDS);
                         break;
                 }
             } catch (Exception e) {
@@ -126,25 +118,24 @@ public class InputHandler {
      * Example: add C101
      */
     private void handleAddCar(String[] tokens) {
-        if (tokens.length < 2) {
-            controller.showError("Car ID is required for 'add' command. \n Example: add C101");
+        if (tokens.length != 2) {
+            controller.showError("Exactly one car ID is required for 'add' command. \n Example: add C101");
             return;
         }
-        String carId = tokens[1];
-        controller.addCar(carId);
+        controller.addCar(tokens[1]);
     }
 
     /**
      * Format: order <carId> <item1> <item2> ...
      * Example: order C101 Burger Fries Soda
      */
-    private void handleEnterOrder(String[] tokens, String originalLine) {
+    private void handleEnterOrder(String[] tokens) {
         if (tokens.length < 3) {
             controller.showError("Car ID and items are required for 'order' command. \n Example: order C101 Burger Fries Soda");
             return;
         }
         String carId = tokens[1];
-        
+
         // Collect all subsequent arguments as ordered items
         List<String> items = new ArrayList<>(Arrays.asList(tokens).subList(2, tokens.length));
         controller.enterOrder(carId, items);
@@ -164,7 +155,6 @@ public class InputHandler {
             int ticketId = Integer.parseInt(tokens[1]);
             controller.markPaid(ticketId);
         } catch (NumberFormatException e) {
-            // As specified in "Where validation lives": non-numeric ID triggers an error
             controller.showError("Non-numeric ticket ID. \n Example: pay 1");
         }
     }
@@ -183,7 +173,6 @@ public class InputHandler {
             int ticketId = Integer.parseInt(tokens[1]);
             controller.markPrepared(ticketId);
         } catch (NumberFormatException e) {
-            // Non-numeric ID caught before reaching controller
             controller.showError("Non-numeric ticket ID. \n Example: prepare 1");
         }
     }
@@ -193,22 +182,9 @@ public class InputHandler {
      */
     private void handleDeliver(String[] tokens) {
         if (tokens.length != 1) {
-            controller.showError("Unknown command. \n Valid commands: add, order, pay, prep, deliver, cancel.");
+            controller.showError(VALID_COMMANDS);
             return;
         }
         controller.deliver();
-    }
-
-    /**
-     * Format: cancel <carId>
-     * Example: cancel C101
-     */
-    private void handleCancelOrder(String[] tokens) {
-        if (tokens.length != 2) {
-            controller.showError("Car ID is required for 'cancel' command. \n Example: cancel C101");
-            return;
-        }
-        String carId = tokens[1];
-        controller.cancelOrder(carId);
     }
 }

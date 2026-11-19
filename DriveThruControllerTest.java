@@ -321,13 +321,20 @@ public class DriveThruControllerTest {
         controller.deliver();
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testDeliverOrderNotReady() {
         controller.addCar("Car1");
         controller.enterOrder("Car1", VALID_ITEMS);
 
+        int errorsBefore = view.errorCount;
+        int rendersBefore = view.renderCount;
+
         controller.deliver();
-    }
+
+        assertEquals(errorsBefore + 1, view.errorCount);
+        assertTrue(view.lastError.contains("There are no orders"));
+        assertEquals(rendersBefore, view.renderCount);
+}
 
     // ----------------------------------------------------------
     // showError Tests
