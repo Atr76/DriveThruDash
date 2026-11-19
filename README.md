@@ -3,7 +3,9 @@
 A command-line drive-thru simulator built as Model / View / Controller. Cars join a queue, the front car places an order, the order is paid and prepared, and the front car is delivered. The Deliverable 4 change feature is **Order Cancellation / Drive-Off** (`cancel <carId>`).
 
 ## How to Compile and Run
+Run in vs code by clicking the arrow and then inputting the users response in the terminal.
 
+Or:
 Requires JDK 17+. All source files are in the project root (default package).
 
 ```bash
@@ -24,7 +26,7 @@ javac -d out -cp lib/junit-platform-console-standalone-6.1.3.jar *.java
 java -jar lib/junit-platform-console-standalone-6.1.3.jar -cp out --scan-classpath
 ```
 
-You can also run them from the VS Code Testing sidebar (`.vscode/settings.json` already points at `lib/`). Tests target the model (`CarTest`, `FoodTicketTest`, `DriveThruQueueTest`, `DriveThruSystemTest`), the controller (`DriveThruControllerTest`), and the input and view layers (`InputHandlerTest`, `DriveThruViewTest`). `InputHandler` accepts an `InputStream`, so commands are tested without blocking on `System.in`.
+Run them from the VS Code Testing sidebar (`.vscode/settings.json` already points at `lib/`). Tests target the model (`CarTest`, `FoodTicketTest`, `DriveThruQueueTest`, `DriveThruSystemTest`), the controller (`DriveThruControllerTest`), and the input and view layers (`InputHandlerTest`, `DriveThruViewTest`). `InputHandler` accepts an `InputStream`, so commands are tested without blocking on `System.in`.
 
 ---
 
