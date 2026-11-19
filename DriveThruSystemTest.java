@@ -159,5 +159,33 @@ public class DriveThruSystemTest {
         ticket.markAsPrepared();
         assertThrows(IllegalStateException.class, () -> ticket.markAsPrepared());
     }
+    @Test
+    public void testCancelOrderRemovesCarAndTicket() {
+        DriveThruSystem s = new DriveThruSystem();
+        s.addCar(new Car("C1"));
+        s.addCar(new Car("C2"));
+        s.createOrder("C1", List.of("Burger"));
+        s.cancelOrder("C1");
+        assertEquals(1, s.getCarSnapshot().size());
+        assertEquals("C2", s.getCarSnapshot().get(0).getCarId());
+        assertEquals(0, s.getTicketSnapshot().size());
+    }
+
+    @Test
+    public void testCancelUnknownCarThrows() {
+        DriveThruSystem s = new DriveThruSystem();
+        assertThrows(NoSuchElementException.class, () -> s.cancelOrder("NOPE"));
+    }
+
+    @Test
+    public void testCancelPreparedOrderThrows() {
+        DriveThruSystem s = new DriveThruSystem();
+        s.addCar(new Car("C1"));
+        s.createOrder("C1", List.of("Burger"));
+        s.markPaid(1);
+        s.markPrepared(1);
+        assertThrows(IllegalStateException.class, () -> s.cancelOrder("C1"));
+        assertEquals(1, s.getCarSnapshot().size());
+    }
 
 }
