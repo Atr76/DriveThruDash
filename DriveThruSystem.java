@@ -23,7 +23,11 @@ public class DriveThruSystem {
         menu.add("Fries");
         menu.add("Soda");
     }
-
+    /**
+     * Adds a car to the drive-thru queue.
+     * @param car the Car object to be added to the queue.
+     * @throws IllegalArgumentException if the car is null or already exists in the queue.
+     */
     public void addCar(Car car) {
         if(car == null) {
             throw new IllegalArgumentException("Car cannot be null");
@@ -34,6 +38,15 @@ public class DriveThruSystem {
         carQueue.enqueue(car);
     }
 
+    /**
+     * Creates a new food order for the specified car.
+     * @param carId the ID of the car for which to create an order.
+     * @param items the list of items to include in the order.
+     * @return the created FoodTicket object.
+     * @throws IllegalArgumentException if the items list is null or empty, or if any item is not on the menu.
+     * @throws NoSuchElementException if the car with the specified ID is not found in the queue.
+     * @throws IllegalStateException if the car with the specified ID is not at the front of the queue.
+     */
     public FoodTicket createOrder(String carId, List<String> items) {
         if(items == null || items.isEmpty()) {
             throw new IllegalArgumentException("Items cannot be null or empty");
@@ -60,42 +73,67 @@ public class DriveThruSystem {
         nextTicketId++;
         return foodTicket;
 }
-
+    /**
+     * Returns the current menu of available items.
+     * @return a Set containing the menu items.
+     */
     public Set<String> getMenu(){
         return menu;
     }
-
+    /**
+     * Returns the next ticket ID to be assigned to a new food order.
+     * @return the next ticket ID.
+     */
     public void markPaid(int ticketId){
         FoodTicket foodTicket = findFoodTicket(ticketId);
         if (foodTicket != null) {
             foodTicket.markAsPaid();
         }
     }
-
+    /**
+     * Marks the specified food ticket as prepared.
+     * @param ticketId the ID of the food ticket to be marked as prepared.
+     * @throws NoSuchElementException if the food ticket with the specified ID is not found in the queue.
+     */
     public void markPrepared(int ticketId){
         FoodTicket foodTicket = findFoodTicket(ticketId);
         if (foodTicket != null) {
             foodTicket.markAsPrepared();
         }
     }
-
+    /**
+     * Delivers the order for the car at the front of the queue if the order is paid and prepared.
+     * @return the Car object that received the order.
+     * @throws IllegalStateException if the order is not ready for delivery.
+     */
     public Car deliverOrder(){
         if(foodTicketQueue.peek().isPaid() && foodTicketQueue.peek().isPrepared()){
-            FoodTicket foodTicket = foodTicketQueue.dequeue();
+            foodTicketQueue.remove(foodTicketQueue.peek());
             Car car = carQueue.dequeue();
             return car ;
         }
         throw new IllegalStateException("Order is not ready for delivery");
     }
-    
+    /**
+     * Returns a snapshot of the current cars in the drive-thru queue.
+     * @return a List containing the Car objects in the queue.
+     */
     public List<Car> getCarSnapshot(){
         return carQueue.toList();
     }
-
+    /**
+     * Returns a snapshot of the current food tickets in the drive-thru queue.
+     * @return a List containing the FoodTicket objects in the queue.
+     */
     public List<FoodTicket> getTicketSnapshot(){
         return foodTicketQueue.toList();
     }
-
+    /**
+     * Finds a car in the queue by its ID.
+     * @param carId the ID of the car to find.
+     * @return the Car object with the specified ID.
+     * @throws NoSuchElementException if the car with the specified ID is not found in the queue.
+     */
     private Car findCar(String carId){
         for (Car car : carQueue.toList()) {
             if (car.getCarId().equals(carId)) {
@@ -104,7 +142,12 @@ public class DriveThruSystem {
         }
         throw new NoSuchElementException("Car with ID " + carId + " not found");
     }
-
+    /**
+     * Finds a food ticket in the queue by its ID.
+     * @param ticketId the ID of the food ticket to find.
+     * @return the FoodTicket object with the specified ID.
+     * @throws NoSuchElementException if the food ticket with the specified ID is not found in the queue.
+     */
     private FoodTicket findFoodTicket(int ticketId){
         for (FoodTicket foodTicket : foodTicketQueue.toList()) {
             if (foodTicket.getTicketId() == ticketId) {
@@ -113,7 +156,9 @@ public class DriveThruSystem {
         }
         throw new NoSuchElementException("FoodTicket with ID " + ticketId + " not found");
     }
-
+    /**
+     * Displays the available options for the drive-thru system.
+     */
     public void options(){
         System.out.println("Available options:");
         System.out.println("add");

@@ -14,18 +14,18 @@ public class DriveThruController {
 
     /**
      * Creates a controller with the given system and view.
-     * @param system the drive-thru system
+     * @param system2 the drive-thru system
      * @param view the drive-thru view
      */
-    public DriveThruController(DriveThruSystem system,
+    public DriveThruController(DriveThruSystem system2,
                                DriveThruView view) {
-        if (system == null || view == null) {
+        if (system2 == null || view == null) {
             throw new IllegalArgumentException(
                 "System and view cannot be null."
             );
         }
 
-        this.system = system;
+        this.system = system2;
         this.view = view;
     }
 

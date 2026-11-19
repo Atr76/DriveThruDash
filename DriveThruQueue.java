@@ -92,6 +92,37 @@ public class DriveThruQueue<T> {
     public int getSize() {
         return this.size;
     }
+    /**
+     * Removes the first occurrence of the specified element from the queue.
+     * @param data the element to be removed.
+     * @throws IllegalArgumentException if the specified element is null.
+     * @throws NoSuchElementException if the specified element is not found in the queue.
+     */
+    public void remove(T data) {
+        if (data == null) {
+            throw new IllegalArgumentException("Cannot remove null data");
+        }
+        if (isEmpty()) {
+            throw new NoSuchElementException("Cannot remove from an empty queue");
+        }
+        if (this.front.data.equals(data)) {
+            dequeue();
+            return;
+        }
+        Node<T> current = this.front;
+        while (current.next != null) {
+            if (current.next.data.equals(data)) {
+                current.next = current.next.next;
+                if (current.next == null) {
+                    this.rear = current;
+                }
+                this.size--;
+                return;
+            }
+            current = current.next;
+        }
+        throw new NoSuchElementException("Element not found in the queue");
+    }
 /**
  * Checks if the queue contains the specified element.  
  * @param data the element to check for in the queue.
