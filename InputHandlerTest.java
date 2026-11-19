@@ -251,4 +251,7 @@ public class InputHandlerTest {
             "cancelOrder:C102",
             "cancelOrder:C103",
             "cancelOrder:C104"
-        ), spy
+                ), spyController.recordedCalls);
+        assertTrue(spyController.errors.isEmpty());
+    }
+}
