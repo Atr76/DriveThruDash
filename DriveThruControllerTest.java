@@ -414,4 +414,20 @@ public class DriveThruControllerTest {
         assertEquals(0, view.lastCars.size());
         assertEquals(0, view.lastTickets.size());
     }
+    @Test
+    public void testCancelOrder() {
+        controller.addCar("Car1");
+        int rendersBefore = view.renderCount;
+        controller.cancelOrder("Car1");
+        assertEquals(rendersBefore + 1, view.renderCount);
+        assertEquals("Cancelled car Car1", view.lastMessage);
+        assertEquals(0, view.lastCars.size());
+    }
+
+    @Test
+    public void testCancelOrderUnknownCar() {
+        controller.cancelOrder("Nope");
+        assertEquals(1, view.errorCount);
+        assertEquals(0, view.renderCount);
+    }
 }
