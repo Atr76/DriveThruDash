@@ -13,7 +13,7 @@ public class Car{
      * @param carID the unique identifier for the car
      */
     public Car(String carID){
-        if(carID == null || carID.isEmpty()) {
+        if(carID == null || carID.isBlank()) {
             throw new IllegalArgumentException("Car ID cannot be null or empty");
         }
         this.carID = carID;
@@ -52,4 +52,20 @@ public class Car{
     public String toString(){
             return "Car ID: " + carID + ", Ticket ID: " + ticketID;
         }
- }
+ 
+/**(non-Javadoc)
+ * Compares this car to another object for equality based on the car ID.
+ * @param obj the object to compare with this car
+ * @see java.lang.Object#equals(java.lang.Object)
+ */
+ public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Car otherCar = (Car) obj;
+        return carID.equals(otherCar.carID);
+    }
+}
