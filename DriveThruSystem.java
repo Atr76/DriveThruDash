@@ -10,6 +10,7 @@ public class DriveThruSystem {
     private DriveThruQueue<Car> carQueue;
     private DriveThruQueue<FoodTicket> foodTicketQueue;
     private int nextTicketId;
+    Set<String> menu = new HashSet<>();
     /**
      * Constructs a DriveThruSystem object with an empty car queue, an empty food ticket queue,
      * and initializes the next ticket ID to 1.
@@ -18,6 +19,9 @@ public class DriveThruSystem {
         carQueue = new DriveThruQueue<>();
         foodTicketQueue = new DriveThruQueue<>();
         nextTicketId =1;
+        menu.add("Burger");
+        menu.add("Fries");
+        menu.add("Soda");
     }
 
     public void addCar(Car car) {
@@ -31,6 +35,23 @@ public class DriveThruSystem {
     }
 
     public FoodTicket createOrder(String carId, List<String> items) {
+        if(items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("Items cannot be null or empty");
+        }
+        if(!carQueue.contains(new Car(carId))) {
+            throw new NoSuchElementException("Car with ID " + carId + " not found");
+        }
+        if(foodTicketQueue.contains(new FoodTicket(nextTicketId, items))) {
+            throw new IllegalArgumentException("FoodTicket with ID " + nextTicketId + " already exists");
+        }
+        if(carId != carQueue.peek().getCarId()) {
+            throw new IllegalStateException("Car with ID " + carId + " is not at the front of the queue");
+        }
+        for(int i = 0; i < items.size(); i++) {
+            if(!menu.contains(items.get(i))) {
+                throw new IllegalArgumentException("Item at index " + i + " is not on the menu");
+            }
+        }
         FoodTicket foodTicket = new FoodTicket(nextTicketId, items);
         foodTicket.setTicketId(nextTicketId);
         Car car = findCar(carId);
@@ -41,10 +62,6 @@ public class DriveThruSystem {
 }
 
     public Set<String> getMenu(){
-        Set<String> menu = new HashSet<>();
-        menu.add("Burger");
-        menu.add("Fries");
-        menu.add("Soda");
         return menu;
     }
 
@@ -68,7 +85,7 @@ public class DriveThruSystem {
             Car car = carQueue.dequeue();
             return car ;
         }
-        return null;
+        throw new IllegalStateException("Order is not ready for delivery");
     }
     
     public List<Car> getCarSnapshot(){
