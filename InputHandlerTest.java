@@ -79,6 +79,11 @@ public class InputHandlerTest {
         }
 
         @Override
+        public void cancelOrder(String carId) {
+            recordedCalls.add("cancelOrder:" + carId);
+        }
+
+        @Override
         public void showError(String message) {
             errors.add(message);
         }
@@ -240,6 +245,17 @@ public class InputHandlerTest {
         ), spyController.recordedCalls);
         assertTrue(spyController.errors.isEmpty());
     }
+    
+    @Test
+    public void testCancelCommandAndAliases() {
+        createHandlerWithInput("cancel C101\ncancelorder C102\nquit").readInput();
+        assertEquals(List.of("cancelOrder:C101", "cancelOrder:C102"), spyController.recordedCalls);
+    }
+
+    @Test
+    public void testCancelWithoutCarIdReportsError() {
+        assertSingleError("cancel\nquit");
+    }
 
     @Test
     public void testCommandsAreCaseInsensitiveAndWhitespaceTolerant() {
@@ -295,11 +311,6 @@ public class InputHandlerTest {
     @Test
     public void testUnknownCommandReportsError() {
         assertSingleError("foo\nquit");
-    }
-
-    @Test
-    public void testCancelIsNoLongerACommand() {
-        assertSingleError("cancel C101\nquit");
     }
 
     @Test

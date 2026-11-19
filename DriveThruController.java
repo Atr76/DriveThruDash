@@ -67,7 +67,17 @@ public class DriveThruController {
             view.showMessage("Available menu: " + system.getMenu());
         }
     }
-
+    public void cancelOrder(String carId) {
+        try {
+            system.cancelOrder(carId);
+            view.showMessage("Cancelled car " + carId);
+            refresh();
+        } catch (NoSuchElementException e) {
+            view.showError("Car not found.");
+        } catch (IllegalStateException e) {
+            view.showError("Order is already prepared and cannot be cancelled.");
+        }
+    }
     /**
      * Marks the specified ticket as paid.
      * @param ticketId the ID of the ticket

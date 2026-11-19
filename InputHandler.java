@@ -12,7 +12,7 @@ import java.util.Scanner;
 public class InputHandler {
 
     private static final String VALID_COMMANDS =
-        "Unknown command. \n Valid commands: add, order, pay, prep, deliver.";
+        "Unknown command. \n Valid commands: add, order, pay, prep, deliver, cancel.";
 
     private final DriveThruController controller;
     private final Scanner scanner;
@@ -100,6 +100,13 @@ public class InputHandler {
                         handleDeliver(tokens);
                         break;
 
+                    case "cancel":
+                    case "cancelorder":
+                    case "removecar":
+                    case "driveoff":
+                        handleCancelOrder(tokens);
+                        break;
+
                     default:
                         controller.showError(VALID_COMMANDS);
                         break;
@@ -124,7 +131,13 @@ public class InputHandler {
         }
         controller.addCar(tokens[1]);
     }
-
+    private void handleCancelOrder(String[] tokens) {
+        if (tokens.length != 2) {
+            controller.showError("Exactly one car ID is required for 'cancel' command. \n Example: cancel C101");
+            return;
+        }
+        controller.cancelOrder(tokens[1]);
+    }
     /**
      * Format: order <carId> <item1> <item2> ...
      * Example: order C101 Burger Fries Soda

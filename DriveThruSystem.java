@@ -57,7 +57,7 @@ public class DriveThruSystem {
         if(foodTicketQueue.contains(new FoodTicket(nextTicketId, items))) {
             throw new IllegalArgumentException("FoodTicket with ID " + nextTicketId + " already exists");
         }
-        if(carId != carQueue.peek().getCarId()) {
+        if (!carId.equals(carQueue.peek().getCarId())) {
             throw new IllegalStateException("Car with ID " + carId + " is not at the front of the queue");
         }
         for(int i = 0; i < items.size(); i++) {
@@ -100,6 +100,18 @@ public class DriveThruSystem {
         if (foodTicket != null) {
             foodTicket.markAsPrepared();
         }
+    }
+    public void cancelOrder(String carId) {
+        Car car = findCar(carId); // throws NoSuchElementException if unknown
+        Integer ticketId = car.getTicketId();
+        if (ticketId != null) {
+            FoodTicket ticket = findFoodTicket(ticketId);
+            if (ticket.isPrepared()) {
+                throw new IllegalStateException("Order is already prepared");
+            }
+            foodTicketQueue.remove(ticket);
+        }
+        carQueue.remove(car);
     }
     /**
      * Delivers the order for the car at the front of the queue if the order is paid and prepared.
