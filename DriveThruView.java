@@ -49,6 +49,38 @@ public class DriveThruView {
                 }
             }
         }
+        int waitingCount = 0;
+        for (Car car : cars) {
+            if (car.getTicketId() == null) {
+                waitingCount++;
+            }
+        }
+        System.out.println("Waiting to order: " + waitingCount);
+        System.out.println("~~~~~ Car queue (" + cars.size() + ") ~~~~~");
+        if (cars.isEmpty()) {
+            System.out.println("empty");
+        }
+        for (int i = 0; i < cars.size(); i++) {
+            Car car = cars.get(i);
+            String ticketInfo;
+            if (car.getTicketId() == null) {
+                ticketInfo = "No ticket yet";
+            }
+            else {
+                ticketInfo = "ticket " + car.getTicketId();
+            }
+            System.out.println((i+1) + ". car " + car.getCarId() +" (" +
+            ticketInfo + ")");
+        }
+        System.out.println("~~~~~ Ticket queue (" + tickets.size() + ") ~~~~~");
+        if (tickets.isEmpty()) {
+            System.out.println("empty");
+        }
+        for (int i = 0; i <tickets.size(); i++) {
+            FoodTicket ticket = tickets.get(i);
+            System.out.println((i+1) + ". ticket " + ticket.getTicketId() 
+        + " | paid: " + ticket.isPaid() + " prepared: " + ticket.isPrepared());     
+       }
     }
     /**
      * Shows the error message.
