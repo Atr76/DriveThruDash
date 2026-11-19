@@ -116,8 +116,11 @@ No. `DriveThruView` is unchanged and learned nothing new about the model, becaus
 |---|---|---|
 | DriveThruView | Cassidy | Drafted the functions on my own. Then I used GenAI to find any inconsistencies with the draft and asked for design suggestions. Then I fixed a bug and had GenAI check over it again. |
 | DriveThruViewTest | Cassidy | I had GenAI draft edge case tests, and then I used only the necessary ones once I reviewed the GenAI output. |
-| DriveThruSystem | Aaron | Drafted functions along side vscode copilot to help catch errors. Also wrote methods then asked GenAi what the method does to see if the method does exactly what I wanted it to do. |
-| DriveThruQueue<T> | Aaron | I used GenAI to see the basic outline of a First-In-First-Out queue then wrote the methods myself based on the outline only using what is needed for the progarm. |
-| FoodTicket + Car | Aaron | Wrote the object classes based on the the outline the group made. Used vscode copiolt to help with the methods. ALos to make sure all the method names are the same accros the classes. |
+| DriveThruSystem | Aaron | Drafted functions alongside VS Code Copilot to help catch errors. Also wrote methods, then asked GenAI what the method does to see if the method does exactly what I wanted it to do. Add edge cases to catch bad input/ |
+| DriveThruSystemTest | Aaron | Tested all methods and edge cases in the DriveThruSystem and fixed any errors in DriveThruSystem that I found inside the code. Used VS Code Copilot to help write the test. |
+| DriveThruQueue<T> | Aaron | I used GenAI to see the basic outline of a First-In-First-Out queue, then wrote the methods myself based on the outline only using what is needed for the program. |
+| DriveThruQueueTest | Aaron | Tested all methods and edge cases in the DriveThruQueue and fixed any errors in DriveThruQueue. Used VS Code Copilot to help write the test.  Edited errors found in classes.|
+| FoodTicket + Car | Aaron | Wrote the object classes based on the outline the group made. Used VS Code Copilot to help with the methods. Also to make sure all the method names are the same across the classes. Used VS Code Copilot to help write the test. |
+| FoodTicket + Car tests | Aaron | Tested all methods and edge cases in each class. |
 | DriveThruControllerTest | Golden | Used AI to generate an initial draft of the tests, then reviewed and revised them by myself. |
 | ImputHandler | Julia | Implemented the InputHandler class (readInput, command tokenization, input-layer validation, and InputStream testing constructor) with GenAI assistance to adhere to strict MVC boundaries, and authored the Reflection and Next Steps sections of the README.md |
