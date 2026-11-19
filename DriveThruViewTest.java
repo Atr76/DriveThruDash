@@ -180,4 +180,23 @@ class DriveThruViewTest {
         view.showMessage("hello");
         assertEquals("hello\n", out());
     }
+    @Test
+    void renderOrderIsCorrectAfterInterleavedEnqueuesAndDequeues() {
+        List<Car> cs = cars(car(1, null));
+        List<FoodTicket> ts = tickets();
+
+        cs.add(car(2, null));            // enqueue car 2
+        cs.get(0).setTicketId(10);       // car 1 orders
+        ts.add(ticket(10, false, false));
+        cs.remove(0);                    // dequeue car 1
+        cs.add(car(3, null));            // enqueue car 3
+
+        view.render(cs, ts);
+        String o = out();
+        assertTrue(o.contains("1. car 2 (No ticket yet)\n"));
+        assertTrue(o.contains("2. car 3 (No ticket yet)\n"));
+        assertTrue(o.contains("Window 1: car 2 is ordering"));
+        assertTrue(o.contains("Window 2: car 2\nNo ticket\n"));
+        assertTrue(o.contains("Waiting to order: 2\n"));
+    }
 }
