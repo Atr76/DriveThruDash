@@ -178,6 +178,7 @@ public class DriveThruSystem {
         System.out.println("pay");
         System.out.println("prep");
         System.out.println("deliver");
+        System.out.println("cancel order");
     }
     public static void main(String[] args) {
         DriveThruSystem system = new DriveThruSystem();
