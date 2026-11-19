@@ -1,87 +1,129 @@
-# cs2114-project3
+# cs2114-project3: DriveThruDash (Team 42), Prototype 2
+
+A command-line drive-thru simulator built as Model / View / Controller. Cars join a queue, the next car places an order, the order is paid and prepared, and the front car is delivered. The change feature for Deliverable 4 is **Order Cancellation / Drive-Off** (`cancel <carId>`).
+
+## How to Compile and Run
+
+Requires JDK 17+. All source files are in the project root (default package).
+
+```bash
+mkdir -p out
+javac -d out Car.java FoodTicket.java DriveThruQueue.java DriveThruSystem.java \
+      DriveThruView.java DriveThruController.java InputHandler.java
+java -cp out DriveThruController
+```
+
+Commands: `add <carId>`, `order <carId> <item> ...` (menu: Burger, Fries, Soda), `pay <ticketId>`, `prep <ticketId>`, `deliver`, `quit`. The `cancel <carId>` command is added in the final build (see Next Steps).
+
+## How to Run the Tests
+
+JUnit is bundled in `lib/`.
+
+```bash
+javac -d out -cp lib/junit-platform-console-standalone-6.1.3.jar *.java
+java -jar lib/junit-platform-console-standalone-6.1.3.jar -cp out --scan-classpath
+```
+
+You can also run them from the VS Code Testing sidebar (`.vscode/settings.json` already points at `lib/`). Tests target the model (`CarTest`, `FoodTicketTest`, `DriveThruQueueTest`, `DriveThruSystemTest`), the controller (`DriveThruControllerTest`), and the input and view layers (`InputHandlerTest`, `DriveThruViewTest`). `InputHandler` accepts an `InputStream`, so commands are tested without blocking on `System.in`.
+
+---
+
 ## Reflection
 
-### What Changed from Our Specification
-* **Classes & Method Signatures:**
-  * **`Car`:** Changed `setTicketId(int ticketId)` to `setTicketId(Integer ticketId)` to align with `ticketID` being stored as an `Integer` wrapper object. Also threw `IllegalArgumentException` instead of `IllegalStateException` when a car already has a ticket ID (mistake from spec that we didn't catch).
-  * **`DriveThruQueue<T>`:** Renamed `size()` to `getSize()` because the rest of the model uses get accessors (for consistency) and added a `contains(T data)` helper method. Additionally, `toList()` returns a standard `ArrayList` rather than an unmodifiable copy because `refresh()` only needs a snapshot to pass to the view.
-  * **`FoodTicket`:** Renamed `markPaid()` and `markPrepared()` to `markAsPaid()` and `markAsPrepared()` (as called in `DriveThruSystem`), and included a `setTicketId(int)` setter because `DriveThruSystem.createOrder` assigns the ID after construction.
-  * **`DriveThruSystem`:** Renamed `findTicket(int)` to `findFoodTicket(int)` to match the class name. In `getMenu()`, we returned a `HashSet` containing `"Burger"`, `"Fries"`, and `"Soda"` rather than an unmodifiable set.
-  * **`InputHandler`:** Added an overloaded constructor `InputHandler(DriveThruController controller, InputStream in)` alongside `InputHandler(DriveThruController controller)` so CLI commands can be injected via `ByteArrayInputStream` during unit tests without blocking on `System.in`.
-* **Where Validation Lives:**
-  * While the spec called for `DriveThruSystem.createOrder(...)` to validate menu items, the 7-item order cap, and whether a car is next in line, the current `DriveThruSystem.createOrder` implementation only checks if `carId` exists.
-  * Similarly, `DriveThruSystem.addCar(...)` currently relies on `carQueue.contains(car)`, which checks reference equality (`Object.equals`) rather than duplicate `carId` strings unless `Car.equals` is overridden.
-  * In `DriveThruSystem.deliverOrder()`, the method currently returns `null` if the front ticket is not both paid and prepared (and throws `NoSuchElementException` from `peek()` if empty) instead of throwing `IllegalStateException` as expected by `DriveThruController.deliver()`.
-* **Test Cases:**
-  * Corrected specification typos in our test suite (e.g., `Car` constructor throwing `IllegalArgumentException` instead of `NoSuchElementException` on blank input, and `isPrepared()` returning `false` before preparation).
+### How did our design absorb the change?
 
-### Did the Model Really Stand Alone?
-* **Yes.** None of the Model classes (`Car`, `FoodTicket`, `DriveThruQueue<T>`, `DriveThruSystem`) import or reference `DriveThruView`, `InputHandler`, or `DriveThruController`.
-* The boundary holds cleanly: `DriveThruController.refresh()` pulls `List<Car>` and `List<FoodTicket>` snapshots from `DriveThruSystem` and passes them into `DriveThruView.render(List<Car>, List<FoodTicket>)`, ensuring the View never holds a direct reference to the Model.
+**Classes the cancel feature touched so far:**
 
-### What Happened to Our Unknowns
-* **Figured Out:**
-  * **Dual-Queue Synchronization:** Linking `Car` and `FoodTicket` via `ticketId` allowed both FIFO queues to operate independently while keeping Window 1 (next car with `ticketId == null`) and Window 2 (front car in `carQueue` + front ticket in `foodTicketQueue`) synchronized in `DriveThruView`.
-  * **Headless CLI Testing:** Decoupling `Scanner` from `System.in` via an `InputStream` constructor in `InputHandler` solved automated command testing.
-* **Still Open:**
-  * **Multi-Word Menu Items:** Splitting CLI commands on whitespace in `InputHandler` works for single-word items (`Burger`, `Fries`, `Soda`), but will require delimiter rules (such as commas or quotes) if multi-word items are added to the menu.
+- `DriveThruQueue<T>`: added `remove(T data)`, which unlinks a node from the front, middle, or rear while keeping `front`, `rear`, and `size` correct. It throws `IllegalArgumentException` for `null` and `NoSuchElementException` if the element is missing.
+- `DriveThruSystem`: `deliverOrder()` now uses `foodTicketQueue.remove(...)` instead of `dequeue()`. The `cancelOrder(String carId)` method from the plan is **not written yet**.
+- `InputHandler`: we added a `cancel <carId>` command, then removed it, because `DriveThruController.cancelOrder` doesn't exist yet and the project would not compile with it. Related cleanup in the same file: the "valid commands" message is a single constant, and `add` now requires exactly one argument.
+- `DriveThruController`: not changed for the feature. The only edit was a cosmetic rename of the constructor parameter.
 
-### What Doesn't Work Yet
-* **`DriveThruSystem.deliverOrder()` Exception Mismatch:** `DriveThruController.deliver()` catches `IllegalStateException` when an order isn't ready or the queue is empty[cite: 19], but `DriveThruSystem.deliverOrder()` currently returns `null` when unpaid/unprepared (causing a `NullPointerException` on `car.getCarId()` in the controller) and throws `NoSuchElementException` when empty.
-* **Missing Domain Validations in `DriveThruSystem`:**
-  * `createOrder` does not yet validate items against `getMenu()`, enforce the 7-item maximum, or verify that the ordering car is the first car without a ticket.
-  * `addCar` checks `carQueue.contains(car)` without `Car` overriding `equals()`, allowing duplicate `carId`s to be enqueued.
-  * `Car.setTicketId(Integer ticketId)` checks `if (ticketId != null)` (the parameter) instead of `if (this.ticketID != null)` (the field), preventing any valid ticket ID from being assigned.
-  * `Car` constructor checks `carID.isEmpty()` rather than `carID.isBlank()`, allowing whitespace-only IDs.
+**What matched the D3 prediction:** `DriveThruQueue` needed `remove` exactly as predicted, and `Car`, `FoodTicket`, and `DriveThruView` did not change at all. Everything cancel needs to know about a car and its ticket (`getTicketId()`, `isPrepared()`) was already there.
+
+**What surprised us:**
+
+- The model piece was the easy part and the wiring was the hard part. `cancelOrder` has to exist in the system and the controller before the input handler can call it, so the layers could not be merged independently.
+- `remove` turned out to be useful for more than cancel: `deliverOrder` now removes the front ticket through it.
+- Adding `Car.equals` on `carID` earlier made `remove(new Car(id))` and duplicate detection work without extra search code.
+
+### Did the change cross the model/view line?
+
+No. `DriveThruView` is unchanged and learned nothing new about the model, because it only renders the `List<Car>` and `List<FoodTicket>` snapshots the controller hands it. No model class references `InputHandler`, `DriveThruView`, or `DriveThruController`. The only layer ripple we hit was build-order: `InputHandler` depended on a controller method that wasn't there yet.
+
+### What changed from our D3 plan?
+
+- **Feature scope:** `cancel` is not yet reachable from the CLI. We pulled the command from `InputHandler` to keep the build compiling, and the model/controller wiring moves to the final build. We are not switching features.
+- **`DriveThruQueue.remove`:** it returns `void` and throws `NoSuchElementException` when the element isn't found, rather than returning a boolean, so callers can't silently ignore a miss.
+- **MVP fixes from D3 that are done:**
+  - `Car.setTicketId` checks the field and the constructor rejects blank IDs. We kept `IllegalArgumentException` instead of the planned `IllegalStateException`, and `CarTest` expects that.
+  - `addCar` rejects duplicate car IDs through `Car.equals`.
+  - `deliverOrder` throws `IllegalStateException` when the front order isn't paid and prepared.
+  - `createOrder` rejects items not on the menu.
+- **Tests:** `DriveThruSystemTest` and `FoodTicketTest` were added since D3. We fixed `testDeliverOrderNotReady` to expect the error message (it still expected the old `NullPointerException`).
+
+### What doesn't work yet?
+
+- **`cancel` is not implemented end to end.** `DriveThruSystem.cancelOrder` and `DriveThruController.cancelOrder` are missing, and `InputHandlerTest.testCancelIsNoLongerACommand` currently asserts that `cancel` is an unknown command. That test must be replaced when the command returns.
+- **`createOrder` compares car IDs with `!=`** (`carId != carQueue.peek().getCarId()`), which compares String references. IDs typed on separate lines are different objects, so ordering from the CLI can be rejected as "not at the front of the queue." It should use `.equals`.
+- **`createOrder` lets only the front car order.** The rule should be "the first car with `ticketId == null`." The 7-item cap is also missing.
+- **Delivering with empty queues** throws `NoSuchElementException`, which `DriveThruController.deliver()` doesn't catch (only `IllegalStateException`), so the user gets a generic "Unknown command." `testDeliverEmptyQueue` currently locks in that behavior.
+- **Missing tests:** `DriveThruQueueTest` has no tests for `remove`, and `DriveThruSystemTest` has no `deliverOrder` or cancel tests. `DriveThruControllerTest` and `FoodTicketTest` use JUnit 4 imports while the other test classes use JUnit 5.
+- **Multi-word menu items** are unsupported because commands are split on whitespace.
+
+### What design change would make the next feature cheaper?
+
+- **Queue helpers that take a predicate** (`find(Predicate<T>)` and `removeIf(Predicate<T>)`), so features like cancel, lookup by ID, or "move to back of the line" become one-line calls in `DriveThruSystem` instead of new linked-list code.
+- **One shared "ordering car" lookup** (a single method that returns the first car without a ticket), used by `createOrder` and by cancel's validation, so the rule lives in one place.
+- **A command table in `InputHandler`** (`Map<String, Command>`), so adding a command is one entry instead of editing a `switch`, a usage message, and its tests.
 
 ---
 
 ## Next Steps
 
-### Remaining Work to Finish the MVP (In Order)
-1. **Fix Critical Model Bugs (`Car` & `DriveThruSystem`):**
-   * Fix `Car.setTicketId` to check `if (this.ticketID != null)` and throw `IllegalStateException`, and update the `Car` constructor to reject `carID.isBlank()`.
-   * Update `DriveThruSystem.addCar` to check for duplicate `carId` strings rather than object reference equality.
-   * Update `DriveThruSystem.deliverOrder()` to throw `IllegalStateException` when `carQueue` is empty or the front ticket is not paid and prepared.
-2. **Implement Missing Order Rules (`DriveThruSystem.createOrder`):**
-   * Add validation for null/empty item lists, menu membership (`getMenu().containsAll(items)`), the 7-item limit, and enforcing that only the first car in `carQueue` with `ticketId == null` can place an order.
-3. **End-to-End Integration & Test Verification:**
-   * Run full CLI scenarios through `DriveThruController.main()` (`add` -> `order` -> `pay` -> `prepare` -> `deliver` -> `quit`) and verify all normal and bad-input JUnit tests pass.
+### What is left for the final build (in order)
 
-### Deliverable 4 Change Feature
-* **Feature Name:** **Order Cancellation / Drive-Off (`cancel <carId>`)**
-* **Architectural Impact Prediction:**
-  * **Classes That Will Change:**
-    * **Model (`DriveThruQueue<T>` & `DriveThruSystem`):** `DriveThruQueue<T>` will need a `remove(T item)` method to unlink a node from the middle or front of the linked list while maintaining `front`, `rear`, and `size`. `DriveThruSystem` will add `cancelOrder(String carId)` to locate the car, remove it from `carQueue`, and remove its linked `FoodTicket` (if one exists and is not yet `PREPARED`) from `foodTicketQueue`.
-    * **Controller (`DriveThruController`):** Will add `cancelOrder(String carId)` to call `system.cancelOrder(carId)`, display a confirmation message, refresh the view, and catch `NoSuchElementException` or `IllegalStateException` to display errors.
-    * **View (`InputHandler`):** Will add a `cancel <carId>` command case in `readInput()` to parse the car ID and call `controller.cancelOrder(carId)`.
-  * **Classes That Should Not Need to Change:**
-    * **`Car` and `FoodTicket`:** Already store `carId`, `ticketId`, and preparation status needed to validate whether cancellation is allowed.
-    * **`DriveThruView`:** Renders queue snapshots dynamically via `render(List<Car>, List<FoodTicket>)`, so removed cars and tickets will automatically disappear from the display without view changes.
+1. **Finish `cancel` end to end:**
+   - `DriveThruSystem.cancelOrder(String carId)`: throw `NoSuchElementException` for an unknown car and `IllegalStateException` if the linked ticket is already prepared. Otherwise remove the ticket (if any) and the car.
+   - `DriveThruController.cancelOrder(String carId)`: confirm, refresh the view, and show errors for those two exceptions.
+   - Restore the `cancel <carId>` command in `InputHandler`, and replace `testCancelIsNoLongerACommand` with real tests.
+2. **Fix `createOrder`:** compare IDs with `.equals`, allow only the first car without a ticket to order, and enforce the 7-item cap.
+3. **Fix empty delivery:** `deliver()` on empty queues shows the same friendly error as an unready order. Update `testDeliverEmptyQueue` to match.
+4. **Fill test gaps:** `remove` (front, middle, rear, only element, missing element, null), `cancelOrder` normal and bad-input cases, controller cancel tests, and an order check after interleaved enqueue, dequeue, and remove calls.
+5. **End-to-end check and rehearsal:** run the full CLI scenario, confirm all tests pass, and update this README to match the final code.
 
-### Stretch Goals
-* **Committing To:** Expanding `DriveThruView.render(...)` to display the full ordered list of cars and tickets in both queues alongside Window 1 and Window 2 statuses (currently `DriveThruView` computes `waitingCount` in a loop but only prints the cars actively at Window 1 and Window 2).
-* **Dropping:** Building a graphical UI (GUI) — keeping the application strictly CLI-based to prioritize model validation, the Deliverable 4 change feature, and thorough JUnit coverage.
+### Stretch goals
 
-### New Tests Needed
-* **Model Tests (`DriveThruQueueTest` & `DriveThruSystemTest`):**
-  * Normal cases: Removing an element from the front, middle, and rear of `DriveThruQueue<T>` updates `getSize()` and `toList()` accurately; calling `cancelOrder("C102")` removes both `C102` and its linked unpaid/in-progress `FoodTicket` while preserving queue order for other cars.
-  * Bad-input cases: Calling `cancelOrder` on a nonexistent `carId` throws `NoSuchElementException`; calling `cancelOrder` when the linked `FoodTicket` is already `PREPARED` throws `IllegalStateException`.
-* **Controller & Input Tests (`DriveThruControllerTest` & `InputHandlerTest`):**
-  * Normal cases: Typing `cancel C102` calls `controller.cancelOrder("C102")` and triggers `view.render(...)` and `view.showMessage(...)`.
-  * Bad-input cases: Typing `cancel` without a `carId` triggers `controller.showError("Unknown command.")`; canceling a prepared order triggers `view.showError(...)` without terminating the input loop.
+- **Committing to:** none beyond the list above. The D3 stretch goal (showing the full queues below the Window 1 and Window 2 status) is already done in `DriveThruView.render` and covered by `DriveThruViewTest`.
+- **Dropping:** a graphical UI. We stay CLI-only to focus on the change feature and test coverage.
 
-### Division of Responsibilities
-* **Julia (`InputHandler` & Integration):** Add `cancel <carId>` command parsing to `InputHandler`, update CLI delimiter handling if needed, and co-lead end-to-end integration testing.
-* **Aaron (`Model` — `Car`, `DriveThruQueue`, `DriveThruSystem`):** Fix the `Car.setTicketId` / `deliverOrder` / `createOrder` MVP bugs, implement `DriveThruQueue.remove` and `DriveThruSystem.cancelOrder`, and add model unit tests.
-* **Cassidy (`View` — `DriveThruView`):** Enhance `DriveThruView.render` to print the full queue waiting lists below the active Window 1 / Window 2 statuses and verify error formatting and add testing. 
-* **Golden (`Controller` — `DriveThruController` & Test Suite):** Wire `cancelOrder` through `DriveThruController`, align exception handling with the model fixes, and update the JUnit test suite[cite: 14, 15].
+### 3-minute demo plan
+
+| Time | Step | Commands |
+|---|---|---|
+| 0:00–0:20 | Intro: MVC layout and where `cancel` fits | (slide) |
+| 0:20–0:50 | Add three cars; show queues | `add C101`, `add C102`, `add C103` |
+| 0:50–1:20 | First car orders; show Window 1 and Window 2 | `order C101 Burger Fries` |
+| 1:20–1:55 | **New feature:** a waiting car drives off; queues update | `cancel C102` |
+| 1:55–2:15 | Bad input survives | `cancel C999`, `order C103 Pizza`, `pay abc` |
+| 2:15–2:45 | Finish the first order | `pay 1`, `prep 1`, `deliver` |
+| 2:45–3:00 | Show passing tests and quit | `quit` |
+
+### Who does what
+
+| Remaining item | Owner |
+|---|---|
+| `DriveThruSystem.cancelOrder`; `createOrder` fixes; empty-delivery fix; `remove` and `DriveThruSystemTest` tests | Aaron |
+| `DriveThruController.cancelOrder`; controller tests for cancel and delivery | Golden |
+| Restore `cancel` in `InputHandler` and its tests; end-to-end run; demo script and timing | Julia |
+| Confirm the view after cancel (removed cars and tickets disappear) and add a view test | Cassidy |
 
 ## Attribution
 
 | Class | Name | Contribution Details |
 |---|---|---|
-| DriveThruView | Cassidy | Drafted the functions on my own. Then I used GenAI to find any inconsistencies with the draft. Additionally, I had GenAI show me how I should start to implement window 1 status, and then I used what I had learned from impletmenting window 1 status to implement window 2 status on my own. Then I had GenAI check over my code. |
+| DriveThruView | Cassidy | Drafted the functions on my own. Then I used GenAI to find any inconsistencies with the draft and asked for design suggestions. Then I fixed a bug and had GenAI check over it again. |
+| DriveThruViewTest | Cassidy | I had GenAI draft edge case tests, and then I used only the necessary ones once I reviewed the GenAI output. |
 | DriveThruSystem | Aaron | Drafted functions along side vscode copilot to help catch errors. Also wrote methods then asked GenAi what the method does to see if the method does exactly what I wanted it to do. |
 | DriveThruQueue<T> | Aaron | I used GenAI to see the basic outline of a First-In-First-Out queue then wrote the methods myself based on the outline only using what is needed for the progarm. |
 | FoodTicket + Car | Aaron | Wrote the object classes based on the the outline the group made. Used vscode copiolt to help with the methods. ALos to make sure all the method names are the same accros the classes. |
