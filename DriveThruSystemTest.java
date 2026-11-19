@@ -25,6 +25,7 @@ public class DriveThruSystemTest {
     @Test 
     public void testAddCar() {
         driveThruSystem = new DriveThruSystem();
+        car = new Car("CAR123");
         driveThruSystem.addCar(car);
         assertEquals(1, driveThruSystem.getCarSnapshot().size());
         assertEquals("CAR123", driveThruSystem.getCarSnapshot().get(0).getCarId());
@@ -35,13 +36,16 @@ public class DriveThruSystemTest {
      */
     @Test
     public void addCarWithNullThrowsException() {
+        driveThruSystem = new DriveThruSystem();
         assertThrows(IllegalArgumentException.class, () -> driveThruSystem.addCar(null));
     }
     /**
      * Tests that adding a car with a duplicate ID throws an exception.
      */
-    @Test 
+    @Test
     public void addCarWithDuplicateIdThrowsException() {
+        driveThruSystem = new DriveThruSystem();
+        Car car = new Car("CAR123");
         driveThruSystem.addCar(car);
         Car duplicateCar = new Car("CAR123");
         assertThrows(IllegalArgumentException.class, () -> driveThruSystem.addCar(duplicateCar));
@@ -51,6 +55,8 @@ public class DriveThruSystemTest {
      */
     @Test
     public void testCreateOrder() {
+        driveThruSystem = new DriveThruSystem();
+        Car car = new Car("CAR123");
         driveThruSystem.addCar(car);
         FoodTicket ticket = driveThruSystem.createOrder("CAR123", List.of("Burger", "Fries"));
         assertEquals(1, ticket.getTicketId());
@@ -61,6 +67,8 @@ public class DriveThruSystemTest {
      */
     @Test 
     public void createOrderWithInvalidCarIdThrowsException() {
+        driveThruSystem = new DriveThruSystem();
+        Car car = new Car("CAR123");
         driveThruSystem.addCar(car);
         assertThrows(NoSuchElementException.class, () -> driveThruSystem.createOrder("INVALID_ID", List.of("Burger")));
     }
@@ -69,6 +77,8 @@ public class DriveThruSystemTest {
      */
     @Test 
     public void createOrderWithEmptyItemsThrowsException() {
+        driveThruSystem = new DriveThruSystem();
+        Car car = new Car("CAR123");
         driveThruSystem.addCar(car);
         assertThrows(IllegalArgumentException.class, () -> driveThruSystem.createOrder("CAR123", List.of()));
     }
@@ -77,6 +87,8 @@ public class DriveThruSystemTest {
      */
     @Test 
     public void createOrderWithItemNotOnMenuThrowsException() {
+        driveThruSystem = new DriveThruSystem();
+        Car car = new Car("CAR123");
         driveThruSystem.addCar(car);
         assertThrows(IllegalArgumentException.class, () -> driveThruSystem.createOrder("CAR123", List.of("Pizza")));
     }
@@ -85,6 +97,8 @@ public class DriveThruSystemTest {
      */
     @Test 
     public void testCreateOrderWithCarNotAtFrontOfQueueThrowsException() {
+        driveThruSystem = new DriveThruSystem();
+        Car car = new Car("CAR123");
         Car car2 = new Car("CAR456");
         driveThruSystem.addCar(car);
         driveThruSystem.addCar(car2);
@@ -95,6 +109,8 @@ public class DriveThruSystemTest {
      */
     @Test 
     public void testGetCarSnapshot() {
+        driveThruSystem = new DriveThruSystem();
+        Car car = new Car("CAR123");
         driveThruSystem.addCar(car);
         List<Car> carSnapshot = driveThruSystem.getCarSnapshot();
         assertEquals(1, carSnapshot.size());
@@ -105,6 +121,8 @@ public class DriveThruSystemTest {
      */
     @Test
     public void testGetTicketSnapshot() {
+        driveThruSystem = new DriveThruSystem();
+        Car car = new Car("CAR123");
         driveThruSystem.addCar(car);
         driveThruSystem.createOrder("CAR123", List.of("Burger", "Fries"));
         List<FoodTicket> ticketSnapshot = driveThruSystem.getTicketSnapshot();
@@ -116,6 +134,8 @@ public class DriveThruSystemTest {
      */
     @Test
     public void markAsPaidAndPrepared() {
+        driveThruSystem = new DriveThruSystem();
+        Car car = new Car("CAR123");
         driveThruSystem.addCar(car);
         driveThruSystem.createOrder("CAR123", List.of("Burger", "Fries"));
         FoodTicket ticket = driveThruSystem.getTicketSnapshot().get(0);
@@ -129,6 +149,8 @@ public class DriveThruSystemTest {
      */
     @Test 
     public void markAsPaidAndPreparedException() {
+        driveThruSystem = new DriveThruSystem();
+        Car car = new Car("CAR123");
         driveThruSystem.addCar(car);
         driveThruSystem.createOrder("CAR123", List.of("Burger", "Fries"));
         FoodTicket ticket = driveThruSystem.getTicketSnapshot().get(0);

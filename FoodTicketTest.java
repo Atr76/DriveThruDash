@@ -27,6 +27,7 @@ public class FoodTicketTest {
      */
     @Test 
     public void testGetTicketId() {
+        ticket = new FoodTicket(1, List.of("Burger", "Fries"));
         assertEquals(1, ticket.getTicketId());
     }
 
@@ -35,6 +36,7 @@ public class FoodTicketTest {
      */
     @Test 
     public void testSetTicketId() {
+        ticket = new FoodTicket(1, List.of("Burger", "Fries"));
         ticket.setTicketId(2);
         assertEquals(2, ticket.getTicketId());
     }
@@ -43,6 +45,7 @@ public class FoodTicketTest {
      */
     @Test 
     public void testGetItems() {
+        ticket = new FoodTicket(1, List.of("Burger", "Fries"));
         List<String> items = ticket.getItems();
         assertEquals(2, items.size());
         assertTrue(items.contains("Burger"));
@@ -53,6 +56,7 @@ public class FoodTicketTest {
      */
     @Test
     public void testPaid() {
+        ticket = new FoodTicket(1, List.of("Burger", "Fries"));
         assertFalse(ticket.isPaid());
         ticket.markAsPaid();
         assertTrue(ticket.isPaid());
@@ -62,7 +66,9 @@ public class FoodTicketTest {
      */
     @Test 
     public void testPrepared() {
+        ticket = new FoodTicket(1, List.of("Burger", "Fries"));
         assertFalse(ticket.isPrepared());
+        ticket.markAsPaid();
         ticket.markAsPrepared();
         assertTrue(ticket.isPrepared());
     }
@@ -71,6 +77,7 @@ public class FoodTicketTest {
      */
     @Test 
     public void testMarkAsPaidException() {
+        ticket = new FoodTicket(1, List.of("Burger", "Fries"));
         ticket.markAsPaid();
         assertThrows(IllegalStateException.class, () -> ticket.markAsPaid());
     }
@@ -79,7 +86,7 @@ public class FoodTicketTest {
      */
     @Test
     public void testMarkAsPreparedException() {
-        ticket.markAsPrepared();
+        ticket = new FoodTicket(1, List.of("Burger", "Fries"));
         assertThrows(IllegalStateException.class, () -> ticket.markAsPrepared());
     }
 }
