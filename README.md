@@ -119,5 +119,5 @@ No. `DriveThruView` is unchanged and learned nothing new about the model, becaus
 | DriveThruSystem | Aaron | Drafted functions along side vscode copilot to help catch errors. Also wrote methods then asked GenAi what the method does to see if the method does exactly what I wanted it to do. |
 | DriveThruQueue<T> | Aaron | I used GenAI to see the basic outline of a First-In-First-Out queue then wrote the methods myself based on the outline only using what is needed for the progarm. |
 | FoodTicket + Car | Aaron | Wrote the object classes based on the the outline the group made. Used vscode copiolt to help with the methods. ALos to make sure all the method names are the same accros the classes. |
-| DriveThruController | Golden | Implemented the DriveThruController class based on the team's outline. Used AI to help implement the controller methods and ensure that the method calls and names were consistent across the different classes. |
+| DriveThruControllerTest | Golden | Used AI to generate an initial draft of the tests, then reviewed and revised them by myself. |
 | ImputHandler | Julia | Implemented the InputHandler class (readInput, command tokenization, input-layer validation, and InputStream testing constructor) with GenAI assistance to adhere to strict MVC boundaries, and authored the Reflection and Next Steps sections of the README.md |
