@@ -116,7 +116,7 @@ No. `DriveThruView` is unchanged and learned nothing new about the model, becaus
 
 | Class | Name | Contribution Details |
 |---|---|---|
-| DriveThruView | Cassidy | Drafted the functions on my own. Then I used GenAI to find any inconsistencies with the draft and asked for design suggestions. Then I fixed a bug and had GenAI check over it again. |
+| DriveThruView | Cassidy | Drafted the new functions on my own. Then I used GenAI to find any inconsistencies with the draft and asked for design suggestions. Then I fixed a bug and had GenAI check over it again. |
 | DriveThruViewTest | Cassidy | I had GenAI draft edge case tests, and then I used only the necessary ones once I reviewed the GenAI output. |
 | DriveThruSystem | Aaron |Add edge cases to catch bad input. And fix errors within the code.|
 | DriveThruSystemTest | Aaron | Tested all methods and edge cases in the DriveThruSystem and fixed any errors in DriveThruSystem that I found inside the code. Used VS Code Copilot to help write the test. |
