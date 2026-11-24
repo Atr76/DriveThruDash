@@ -50,9 +50,10 @@ public class InputHandler {
      * Malformed commands or non-numeric IDs are caught here and reported via controller.showError.
      */
     public void readInput() {
+        System.out.println();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine().trim();
-
+            System.out.println();
             if (line.isEmpty()) {
                 continue;
             }
@@ -111,6 +112,7 @@ public class InputHandler {
                         controller.showError(VALID_COMMANDS);
                         break;
                 }
+                System.out.println();
             } catch (Exception e) {
                 // Safeguard against unexpected runtime exceptions during parsing
                 controller.showError("Unknown command.");

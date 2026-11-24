@@ -72,7 +72,7 @@ public class DriveThruSystem {
         foodTicketQueue.enqueue(foodTicket);
         nextTicketId++;
         return foodTicket;
-}
+    }
     /**
      * Returns the current menu of available items.
      * @return a Set containing the menu items.
@@ -172,13 +172,14 @@ public class DriveThruSystem {
      * Displays the available options for the drive-thru system.
      */
     public void options(){
+        System.out.println();
         System.out.println("Available options:");
-        System.out.println("add");
-        System.out.println("order");
-        System.out.println("pay");
-        System.out.println("prep");
-        System.out.println("deliver");
-        System.out.println("cancel order");
+        System.out.println("1. Add");
+        System.out.println("2. Order");
+        System.out.println("3. Pay");
+        System.out.println("4. Prep");
+        System.out.println("5. Deliver");
+        System.out.println("6. Cancel order");
     }
     public static void main(String[] args) {
         DriveThruSystem system = new DriveThruSystem();
